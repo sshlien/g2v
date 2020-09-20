@@ -1,0 +1,184 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta name="robots" content="index,follow">
+  <title>Gchord to Voice </title>
+  <link rel="stylesheet" href="" type="text/css">
+</head>
+<body>
+<h2>Gchords to Voices</h2>
+
+<h3>Introduction</h3>
+<p>
+The program takes a plain single voiced abc tune
+and produces a  4 voiced version of the tune
+where the embedded guitar chords have been expanded
+in the last voice. The first three voices are copies 
+of the tune without the guitar chords but assigned to
+different instruments or midi programs. These voices
+may be transposed up or down by an octave.
+The whole tune can be repeated several times with different
+instrumental arrangements.  The resulting tune
+can be played immediately or saved in either abc
+or midi format.
+<p>
+Here are two midi files created with this program.
+
+ <a href="Morrisons_Jig.mid">Morrison's Jig</a> and
+ <a href="Dicks_Maggot.mid">Dick's Maggot</a>
+<br>
+
+<h3>Requirements</h3>
+<p>
+The program requires the tcl/tk 8.5 or 8.6 interpreter in order to run.
+Tcl/tk is usually available with Posix (Linux) systems and can installed
+for free on Windows operating systems from
+<a href="https://www.activestate.com/products/tcl/downloads/">https://www.activestate.com/products/tcl/downloads/</a>.
+If you wish to create a midi file you will need abc2midi which is available
+from the abcMIDI package.  You will also need a midi player
+if you wish to test the midi file.  If you are able to hear
+the above sample midi files, then you already have a midi
+player on your system.
+<p>
+The program also allows you to view and play the sheet music in common music
+notation in a browser using the JavaScript code created by Jean-Francois
+Moine. This does not require a midi player or abc2midi.
+
+
+<h3>Test Files</h3>
+Any of the files in the <a href="https://ifdo.ca/~seymour/nottingham/nottingham.html">Nottingham Database</a> should work. 
+<br>
+
+<h3>Usage</h3>
+On Windows click on the g2v.tcl icon, on Linux
+or type
+<pre>
+wish g2v.tcl
+</pre>
+
+<p>
+If you are running the program for the first time, you may need
+to specify the paths to the abc2midi executable, the midi player
+and your browser. Certain defaults have been assumed for Windows
+and Linux operating systems. Go to <b>configure/General configuration</b>
+at the bottom of the window and specify the paths in either the
+entry boxes or navigate to the files using the adjacent buttons.
+The configuration information will be stored in a file g2v.ini
+when you exit the program.
+
+<p>
+Select an abc file using the <b>input</b> button at the bottom left
+to browse your file.
+If the abc file contains a collection of tunes, select one of the
+tunes in the table of contents list on the left.
+<br>
+
+At this point, you can click on one of the bottom buttons,
+<b>play</b>, <b>display</b>, or <b>save</b>.
+The graphical user interface should look like this.
+<br>
+<img src="g2vtcl1.png" alt = "g2vtcl before"> 
+<p>
+You can click the <b>play</b> button any time to convert the exposed
+selection into a midi file and to send the resulting midi file to
+to a midi player. You can click the <b>display</b> button to show
+the common music notation in a browser. (Clicking on a note in
+the browser will cause it to play and follow the music.)
+<p>
+Clicking the <b>expand</b> button will convert this selection into a
+multivoiced abc file with several repeats and display it on the
+scrollable and editable text frame.
+
+<img src="g2vtcl2.png" alt = "g2vtcl after"> 
+
+<p>
+You can save the resulting tune either as an abc file or a MIDI file
+by clicking on the <b>save</b> menu button. By default the root name of
+the file is determined from the title of the tune and the file
+is stored in the same folder that g2v is stored. You can change
+the name by browsing the file structure using the <b>output</b>
+button or editing the file path name in the adjoining entry box. 
+<p>
+The <b>output</b> button allows you to select any file for saving
+the above contents. You do not need to indicate any extension
+since it will be added automatically.
+<p>
+There are two configuration windows accessible from the <b>configure</b>
+menu button that control how the tune is expanded. For some operating
+systems it is likely that you will need to specify the midi 
+player in the <b>general configuration</b> window 
+<p>
+It is assumed that abc2midi is in your execution path or is contained
+in the same folder as g2v. The other controls are described in the
+<b>Advanced Features</b> section of this documentation, but first
+you need to know how the program works.
+
+<h3>Method</h3>
+The tune is expanded into 4 voices. This is not configurable presently.
+Each of the first three voices is a verbatim copy of the tune without
+the embedded guitar chords, but the copy may be transposed up or down by one
+or two octaves.  The 4 th voice contains the bass/chordal accompaniment
+that would automatically be generated by abc2midi from the 
+the guitar chords embedded in the body of the tunes. (Some control
+of the form of this accompaniment is permitted using the 
+ <b>%%MIDI gchord</b> command. (See the 
+<a href="http://ifdo.ca/~seymour/runabc/abcguide/abc2midi_guide.html">abc2midi guide </a>
+for an explanation of these codes.) The expanded voices are a repeated
+a fixed number of times so that the whole tune is played several times.
+<p>
+In each repeat the voices are assigned to 
+specific MIDI programs (instrument) and  specific velocitys
+(loudness) by placing  <b>%%MIDI program</b> and
+<b>%%MIDI control</b> commands. The assignments are built
+into the program, however, they can be changed using the
+configuration window described in the next section.
+There are 11 possible instrument configuration which are 
+addressed by the labels <b>midi1, midi2,</b> and
+etc. In each repeat a different configuration is chosen at random.
+<p>
+<h3>Advanced Features</h3>
+<h4>General Configuration</h4>
+Many abc tunes do not typically include tempo indications. Since
+abc2midi by default plays the tune at 120 beats/bar which is
+too slow for most dances, the program inserts a tempo indication
+(eg. <b>Q: 1/4=180</b>). You can change the tempo, using the
+slider in the <b>general configuration</b> window to change
+the desired tempo.
+<br>
+<img src="general_configuration.png" alt = "general configuration"> 
+<p>
+By default the number of repeats is 3. The number can be increased
+or decreased using the slider.
+<p> When you click on a specific tune
+in the left listbox, the program picks a random selection of
+instrument configurations (midi2 midi8 midi10). You can change
+this selection in the bottom entry box. If you remove the tick
+mark from the check box labeled <b>random arrangement</b> the
+selection of instrument configurations does not change each time
+you click on a new tune in the listbox.
+<p>
+By default the guitar chords are all removed from the body of
+the tune before making it a separate voice. If you wish to 
+keep the guitar chords, put a tick mark in the <b>preserve
+gchords</b> checkbox.
+<h4>Configure Midi Arrangements</h4>
+
+<img src="voice.png" alt = "voice configuration"> 
+<br>
+The program comes with a specific configuration of instruments
+for each of the 11 arrangements. The instruments, loudness
+and octave can be changed for any voice and any arrangement
+using this window. Clicking <b>export</b> saves all your changes
+in an tcl/tk formatted file g2varr.tcl. Clicking <b>import</b>
+restores all the changes that you have saved. In addition,
+the file also stores the path to your midiplayer.
+
+
+
+
+</p>
+<hr width="75%">
+<center>This page was last updated on September 18 2020.
+</center>
+</body>
+</html>
