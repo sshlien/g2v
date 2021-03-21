@@ -46,12 +46,15 @@ exec wish "$0" "$@"
 # strings. When we finish we dump everything out
 # producing a new abc file.
 
+
+set g2v_version 1.0
+set g2v_date "March 21 2021"
+set g2v_title "$g2v_version $g2v_date"
+
 wm protocol . WM_DELETE_WINDOW {
     write_g2v_ini 
     exit
     }
-
-
 
 proc midi_init {} {
 global midi
@@ -731,7 +734,7 @@ set gchordpat {\"[^\"]+\"}
 set curlypat {\{[^\}]*\}}
 set chordpat {\[[^\]\[]*\]}
 set instructpat {![^!]*!}
-set tripletpat {\(3}
+set tupletpat  {\(\d(\:\d)*}
 set sectpat {\[[0-9]+}
 
 global bar_accumulator
@@ -800,16 +803,17 @@ while {$i < [string length $line]} {
      continue}
    }
 
-
- set success [regexp -indices -start $i $tripletpat $line location]
+set success [regexp -indices -start $i $tupletpat $line location]
 # search for triplet indication
   if {$success} {
    set loc1  [lindex $location 0]
    set loc2  [lindex $location 1]
-   if {$loc1 == $i} {process_triplet
+   if {$loc1 == $i} {process_tuplet $location $line
      set i [expr $loc2+1]
      continue}
    }
+
+
 
  set success [regexp -indices -start $i $instructpat $line location]
 # search for embedded instructions like !fff!
@@ -849,13 +853,39 @@ set expandedchords $expandedchords$expandedchords_for_line\n
 }
 
 
-
-
-# set flag to adjust the duration of the next three notes
-proc process_triplet {} {
+# set flag to adjust the duration of the next notes enclosed in tuplet
+proc process_tuplet {location line} {
 global triplet_running
+global tuplenotes
+global nequiv
+global tupletscalefactor
+set tuplet [string range $line [lindex $location 0] [lindex $location 1]]
+set n [scan $tuplet "(%d:%d:%d" n1 n2 n3]
+#puts "tuplet = $tuplet n = $n"
 set triplet_running 1
+if {$n == 1} {
+  set tuplesize $n1
+  set tuplenotes $tuplesize
+  switch $n1 {
+    2 {set nequiv 3}
+    3 {set nequiv 2}
+    4 {set nequiv 3}
+    6 {set nequiv 2}
+    }
+} elseif {$n == 2} {
+   set tuplesize $n1
+   set tuplenotes $tuplesize
+   set nequiv $n2
+} elseif {$n == 3} {
+   set tuplesize $n1
+   set nequiv $n2
+   set tuplenotes $n3
 }
+set tupletscalefactor [expr $nequiv/double($tuplesize)]
+}
+
+
+
 
 # determine the duration of the note. We ignore broken
 # notes (eg A > C) because the two notes usually complete
@@ -865,6 +895,8 @@ proc process_note {token} {
   global bar_accumulator
   global noteunits
   global triplet_running
+  global tupletscalefactor
+  global tuplenotes
   set durpatf {([0-9])\/([0-9])}
   set durpatn {[0-9]}
   set durpatd {\/([0-9])}
@@ -883,11 +915,12 @@ proc process_note {token} {
      } else {
   set increment $noteunits
   }
-  if {$triplet_running} {
-     set increment [expr 2 * $increment/3]
+ if {$triplet_running} {
+     set increment [expr round($tupletscalefactor * $increment)]
      incr triplet_running
-     if {$triplet_running > 3} {set triplet_running 0}
+     if {$triplet_running > $tuplenotes} {set triplet_running 0}
      }
+
   incr bar_accumulator $increment
   return
  }
@@ -1105,15 +1138,17 @@ return $result
 
 
 
+set abctypes {{{abc files} {*.abc}}}
 
 proc gchordgui {} {
 global inputfile xref debug
 global outputfile
 global xref
+global abctypes
 set outputfile tmp.abc
 frame  .gui
 frame  .gui.1
-button .gui.1.0 -text input  -command {set inputfile [tk_getOpenFile]
+button .gui.1.0 -text input  -command {set inputfile [tk_getOpenFile -filetypes $abctypes]
                                        title_index $inputfile}
 entry  .gui.1.1 -width 40 -textvariable inputfile
 button .gui.1.4 -text output -command {set outputfile [tk_getSaveFile]}
@@ -1839,3 +1874,4 @@ puts $outhandle $wholefile
 close $outhandle
 }
 
+wm title . $g2v_title
