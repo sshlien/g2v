@@ -734,8 +734,9 @@ set gchordpat {\"[^\"]+\"}
 set curlypat {\{[^\}]*\}}
 set chordpat {\[[^\]\[]*\]}
 set instructpat {![^!]*!}
+set instructpat2 {\[I:(.*?)\]}
 set tupletpat  {\(\d(\:\d)*}
-set sectpat {\[[0-9]+}
+set sectpat {[-,0-9]+}
 
 global bar_accumulator
 global expandedchords_for_line
@@ -826,6 +827,19 @@ set success [regexp -indices -start $i $tupletpat $line location]
      continue}
    }
 
+  set success [regexp -indices -start $i $instructpat2 $line location]
+# search for embedded instructions like [I:MIDI program 3]
+  if {$success} {
+   set loc1  [lindex $location 0]
+   set loc2  [lindex $location 1]
+   if {$loc1 == $i} {
+#    skip !fff! and similar instructions embedded in body
+     gv_process_instruction $location $line
+     set i [expr $loc2+1]
+     continue}
+   }
+  
+
  set success [regexp -indices -start $i $notepat $line location]
 # search for notes
  if {$success} {
@@ -850,6 +864,20 @@ set success [regexp -indices -start $i $tupletpat $line location]
  incr i
  }
 set expandedchords $expandedchords$expandedchords_for_line\n
+}
+
+
+proc gv_process_instruction {location line} {
+global gcstringlist
+set instruct [string range $line [lindex $location 0] [lindex $location 1]]
+set midiloc [string first MIDI $instruct]
+if {$midiloc >= 0} {
+   set instruct [string range $instruct 7 end-1]
+   if {[string first gchord $instruct] >= 0} {
+        set instruct [string range $instruct 8 end]
+        set gcstringlist [scangchordstring $instruct]
+        }
+   }
 }
 
 
