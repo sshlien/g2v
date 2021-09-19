@@ -47,8 +47,8 @@ exec wish "$0" "$@"
 # producing a new abc file.
 
 
-set g2v_version 1.0
-set g2v_date "March 21 2021"
+set g2v_version 1.01
+set g2v_date "September 17 2021"
 set g2v_title "$g2v_version $g2v_date"
 
 wm protocol . WM_DELETE_WINDOW {
