@@ -47,8 +47,8 @@ exec wish "$0" "$@"
 # producing a new abc file.
 
 
-set g2v_version 1.01
-set g2v_date "September 17 2021"
+set g2v_version 1.02
+set g2v_date "September 20 2021"
 set g2v_title "$g2v_version $g2v_date"
 
 wm protocol . WM_DELETE_WINDOW {
@@ -926,7 +926,7 @@ proc process_note {token} {
   global tupletscalefactor
   global tuplenotes
   set durpatf {([0-9])\/([0-9])}
-  set durpatn {[0-9]}
+  set durpatn {[0-9]+}
   set durpatd {\/([0-9])}
   set dur2 {/+}
   if {[regexp $durpatf $token match val1 val2]} {
@@ -939,7 +939,9 @@ proc process_note {token} {
      set increment  [expr $noteunits*$val]
     } elseif {
   [regexp $dur2 $token val]} {
-     set increment  [expr $noteunits/2]
+     set rep [string length $val]
+     set fac [expr int(pow(2,$rep))]
+     set increment  [expr $noteunits/$fac]
      } else {
   set increment $noteunits
   }
@@ -996,6 +998,8 @@ proc process_tune {tunestring} {
  set body 0
  foreach line [split $tunestring \n]  {
    if {$debug > 0} {puts ">>$line"}
+   #%%sep gets placed in the wrong place so just get rid of it
+   if {[string first %%sep $line] == 0} continue
    if {[string length $line] < 1} continue
    if {[string first "%%MIDI" $line] >= 0 &&
        [string first "gchord" $line] >=0} {
